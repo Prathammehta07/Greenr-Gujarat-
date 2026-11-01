@@ -1,0 +1,439 @@
+// GREEN GUJARAT — Mission LiFE Citizen Engagement Platform
+// Problem Statement ID: HC26-GEDA01
+// Theme: Green Energy & Sustainability
+//
+// Note: SQLite is used in the demo environment. The same schema is
+// production-ready for PostgreSQL — switch the datasource provider to
+// "postgresql" and update the connection URL. Decimal fields are stored
+// as Float here because SQLite lacks a native Decimal type; on Postgres
+// these should be migrated to Decimal/numeric.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============ AUTH & USERS ============
+
+model User {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  name            String
+  passwordHash    String
+  role            String   @default("CITIZEN") // CITIZEN | MODERATOR | ADMIN
+  publicName      String?  // privacy-conscious display name for leaderboards
+  preferredLang   String   @default("en") // en | gu | hi
+  isDemo          Boolean  @default(false)
+  isActive        Boolean  @default(true)
+  consentProfile  Boolean  @default(true)
+  consentPublic   Boolean  @default(false) // opt-in to leaderboards
+  consentContact  Boolean  @default(false)
+  passwordResetToken String?
+  passwordResetExpires DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  profile         UserProfile?
+  bills           EnergyBill[]
+  footprints      FootprintRecord[]
+  submissions     MissionSubmission[]
+  points          GreenPoints[]
+  userBadges      UserBadge[]
+  solarAssess     SolarAssessment[]
+  posts           Post[]
+  comments        Comment[]
+  postLikes       PostLike[]
+  communityMembers CommunityMember[]
+  communityOwned  Community[]
+  notifications   Notification[]
+  auditLogs       AuditLog[]
+  campaigns       Campaign[]
+  reports         Report[]
+}
+
+model UserProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  districtId      String?
+  district        District? @relation(fields: [districtId], references: [id])
+  cityVillage     String?
+  householdSize   Int      @default(1)
+  homeType        String   @default("APARTMENT") // APARTMENT | INDEPENDENT_HOUSE | ROW_HOUSE | OTHER
+  monthlyKwh      Float?
+  hasRooftopSolar Boolean  @default(false)
+  solarCapacityKw Float?
+  solarInstallDate DateTime?
+  avatarColor     String   @default("16834A")
+  bio             String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([districtId])
+}
+
+model District {
+  id              String   @id @default(cuid())
+  name            String   @unique
+  code            String   @unique
+  state           String   @default("Gujarat")
+  latitude        Float?
+  longitude       Float?
+  population      Int?
+  createdAt       DateTime @default(now())
+
+  profiles        UserProfile[]
+  mapPins         MapPin[]
+  districtStats   DistrictStats?
+}
+
+// ============ ENERGY BILLS & FOOTPRINT ============
+
+model EnergyBill {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fileName        String   // original uploaded filename
+  filePath        String   // internal storage path (private)
+  fileType        String   // image/jpeg, application/pdf
+  fileSize        Int
+  ocrRawText      String?  // raw OCR text, kept for audit
+  consumerName    String?
+  consumerNumber  String?
+  billingPeriod   String?  // e.g. "Oct 2025"
+  unitsConsumed   Float?   // kWh
+  amount          Float?   // INR
+  billDate        DateTime?
+  // user-confirmed fields
+  confirmedUnits  Float?
+  confirmedAmount Float?
+  confirmedPeriod String?
+  status          String   @default("PENDING_CONFIRMATION") // PENDING_CONFIRMATION | CONFIRMED | REJECTED
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@index([billDate])
+}
+
+model FootprintRecord {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  month           String   // YYYY-MM
+  electricityKwh  Float
+  emissionFactor  Float    // kgCO2 per kWh (snapshot of system setting)
+  electricityEmissionKg Float // = electricityKwh * emissionFactor
+  baselineKwh     Float    // user-specific baseline for savings calc
+  savingsKwh      Float    // baseline - current (positive = saved)
+  savingsEmissionKg Float
+  source          String   @default("USER_REPORTED") // USER_REPORTED | BILL_OCR | ADMIN_ADJUSTED
+  notes           String?
+  createdAt       DateTime @default(now())
+
+  @@unique([userId, month])
+  @@index([userId, month])
+}
+
+// ============ MISSIONS, SUBMISSIONS, POINTS, BADGES ============
+
+model Mission {
+  id              String   @id @default(cuid())
+  title           String
+  description     String
+  instructions    String
+  category        String   // ELECTRICITY | WATER | TRANSPORT | WASTE | TREE | RENEWABLE | CONSUMPTION
+  difficulty      String   @default("EASY") // EASY | MEDIUM | HARD
+  points          Int      @default(10)
+  requiresEvidence Boolean  @default(true)
+  evidenceType    String   @default("IMAGE") // IMAGE | TEXT | NONE
+  startDate       DateTime?
+  endDate         DateTime?
+  isActive        Boolean  @default(true)
+  estimatedCo2Kg  Float?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  submissions     MissionSubmission[]
+}
+
+model MissionSubmission {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  missionId       String
+  mission         Mission  @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  status          String   @default("PENDING") // PENDING | APPROVED | REJECTED | REQUIRES_REVIEW
+  evidenceText    String?
+  evidenceFile    String?
+  reviewerId      String?
+  reviewNote      String?
+  reviewedAt      DateTime?
+  awardedPoints   Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([userId, missionId]) // prevent duplicate submissions
+  @@index([userId])
+  @@index([missionId])
+  @@index([status])
+}
+
+model GreenPoints {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  points          Int      // positive for awards, negative for reversals
+  reason          String
+  sourceType      String   // MISSION | BILL_SAVING | SOLAR | BADGE | REVERSAL | ADMIN
+  sourceId        String?  // links to mission submission, etc.
+  balanceAfter    Int
+  createdAt       DateTime @default(now())
+
+  @@index([userId])
+  @@index([sourceType, sourceId])
+}
+
+model Badge {
+  id              String   @id @default(cuid())
+  code            String   @unique
+  name            String
+  description     String
+  icon            String   // Lucide icon name
+  color           String   @default("16834A")
+  criteria        String   // JSON criteria description
+  points          Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  userBadges      UserBadge[]
+}
+
+model UserBadge {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeId         String
+  badge           Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  awardedAt       DateTime @default(now())
+
+  @@unique([userId, badgeId])
+  @@index([userId])
+}
+
+// ============ SOLAR ============
+
+model SolarAssessment {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  monthlyKwh      Float
+  roofAreaSqm     Float
+  location        String
+  tariff          Float    // INR per kWh
+  orientation     String   @default("SOUTH") // SOUTH | EAST | WEST | FLAT
+  shading         String   @default("NONE") // NONE | LIGHT | MODERATE | HEAVY
+  suggestedCapacityKw Float
+  estimatedMonthlyGeneration Float
+  estimatedInstallationCost Float
+  estimatedAnnualSavings Float
+  estimatedPaybackYears Float
+  estimatedCo2ReductionKg Float
+  createdAt       DateTime @default(now())
+
+  @@index([userId])
+}
+
+// ============ COMMUNITY ============
+
+model Community {
+  id              String   @id @default(cuid())
+  name            String
+  description     String
+  category        String   @default("GENERAL") // GENERAL | SCHOOL | COLLEGE | RWA | NGO | CORPORATE
+  districtId      String?
+  owner           User     @relation(fields: [ownerId], references: [id])
+  ownerId         String
+  isPrivate       Boolean  @default(false)
+  memberCount     Int      @default(1)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  members         CommunityMember[]
+  posts           Post[]
+  campaigns       Campaign[]
+}
+
+model CommunityMember {
+  id              String   @id @default(cuid())
+  communityId     String
+  community       Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role            String   @default("MEMBER") // MEMBER | MODERATOR | ADMIN
+  joinedAt        DateTime @default(now())
+
+  @@unique([communityId, userId])
+  @@index([userId])
+}
+
+model Post {
+  id              String   @id @default(cuid())
+  communityId     String?
+  community       Community? @relation(fields: [communityId], references: [id], onDelete: SetNull)
+  authorId        String
+  author          User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  content         String
+  imageUrl        String?
+  postType        String   @default("DISCUSSION") // DISCUSSION | ACTION | EDUCATIONAL | CAMPAIGN
+  likeCount       Int      @default(0)
+  commentCount    Int      @default(0)
+  isPinned        Boolean  @default(false)
+  isHidden        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  comments        Comment[]
+  likes           PostLike[]
+  reports         Report[]
+
+  @@index([communityId])
+  @@index([authorId])
+}
+
+model Comment {
+  id              String   @id @default(cuid())
+  postId          String
+  post            Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId        String
+  author          User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  content         String
+  isHidden        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  @@index([postId])
+}
+
+model PostLike {
+  id              String   @id @default(cuid())
+  postId          String
+  post            Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+
+  @@unique([postId, userId])
+}
+
+model Report {
+  id              String   @id @default(cuid())
+  reporterId      String
+  reporter        User     @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  postId          String?
+  post            Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  reason          String
+  details         String?
+  status          String   @default("OPEN") // OPEN | REVIEWED | RESOLVED | DISMISSED
+  resolvedBy      String?
+  resolution      String?
+  createdAt       DateTime @default(now())
+
+  @@index([status])
+}
+
+model Campaign {
+  id              String   @id @default(cuid())
+  title           String
+  description     String
+  communityId     String?
+  community       Community? @relation(fields: [communityId], references: [id], onDelete: SetNull)
+  organizerId     String
+  organizer       User     @relation(fields: [organizerId], references: [id])
+  location        String?
+  startDate       DateTime
+  endDate         DateTime?
+  goal            String?
+  status          String   @default("UPCOMING") // UPCOMING | ACTIVE | COMPLETED | CANCELLED
+  createdAt       DateTime @default(now())
+
+  @@index([status])
+}
+
+// ============ MAP ============
+
+model MapPin {
+  id              String   @id @default(cuid())
+  districtId      String?
+  district        District? @relation(fields: [districtId], references: [id])
+  name            String
+  category        String   // EV_CHARGER | SOLAR_INSTALL | RECYCLING | EVENT | INITIATIVE
+  latitude        Float
+  longitude       Float
+  address         String?
+  operator        String?
+  isVerified      Boolean  @default(false)
+  isSample        Boolean  @default(false) // label sample/demo pins
+  metadata        String?  // JSON string of extra info
+  createdAt       DateTime @default(now())
+
+  @@index([category])
+  @@index([districtId])
+}
+
+// ============ ADMIN & SYSTEM ============
+
+model DistrictStats {
+  id              String   @id @default(cuid())
+  districtId      String   @unique
+  district        District @relation(fields: [districtId], references: [id], onDelete: Cascade)
+  participantCount Int     @default(0)
+  missionsCompleted Int    @default(0)
+  reportedSavingsKwh Float @default(0)
+  estimatedCo2ReductionKg Float @default(0)
+  renewableAdoptionCount Int @default(0)
+  isSample        Boolean  @default(false)
+  updatedAt       DateTime @updatedAt
+}
+
+model Notification {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title           String
+  message         String
+  type            String   @default("INFO") // INFO | SUCCESS | WARNING | AWARD | MISSION
+  isRead          Boolean  @default(false)
+  link            String?
+  createdAt       DateTime @default(now())
+
+  @@index([userId, isRead])
+}
+
+model AuditLog {
+  id              String   @id @default(cuid())
+  actorId         String?
+  actor           User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  action          String
+  resource        String
+  resourceId      String?
+  details         String?  // JSON snapshot
+  ipAddress       String?
+  createdAt       DateTime @default(now())
+
+  @@index([actorId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+model SystemSetting {
+  id              String   @id @default(cuid())
+  key             String   @unique
+  value           String
+  description     String?
+  isPublic        Boolean  @default(true)
+  updatedAt       DateTime @updatedAt
+  updatedBy       String?
+}
