@@ -20,7 +20,6 @@ export async function GET(req: NextRequest) {
 
   const users = await db.user.findMany({
     where,
-    include: { profile: { include: { district: true } } },
     orderBy: { createdAt: 'desc' },
     take: 100,
     select: {

@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
   const existing = await db.user.findUnique({ where: { email: email.toLowerCase() } })
   if (existing) return err('Email already registered', 409)
 
-  let district = null
+  let district: { id: string; name: string } | null = null
   if (districtId) {
     district = await db.district.findUnique({ where: { id: districtId } })
     if (!district) return err('Invalid district')

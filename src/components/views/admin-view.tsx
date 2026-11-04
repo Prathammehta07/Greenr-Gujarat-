@@ -24,15 +24,19 @@ interface Metrics {
 }
 interface UserRow { id: string; email: string; name: string; role: string; isDemo: boolean; isActive: boolean; preferredLang: string; district?: string; createdAt: string }
 interface SubmissionRow { id: string; missionId: string; missionTitle: string; category: string; points: number; userId: string; userName: string; userEmail: string; evidenceText?: string; status: string; reviewNote?: string; createdAt: string }
-interface MissionRow { id: string; title: string; category: string; difficulty: string; points: number; isActive: boolean; requiresEvidence: boolean; submissions: number }
+interface MissionRow { id: string; title: string; category: string; difficulty: string; points: number; isActive: boolean; requiresEvidence: boolean; submissions: number; description?: string }
 interface Setting { id: string; key: string; value: string; description?: string; isPublic: boolean }
 interface AuditLog { id: string; action: string; resource: string; resourceId?: string; actor: string; details?: string; ipAddress?: string; timestamp: string }
 interface ReportRow { id: string; reason: string; details?: string; postId: string; postContent?: string; postAuthor?: string; reporter: string; status: string; createdAt: string }
 
-export function AdminView() {
+export function AdminView({ initialTab = 'overview' }: { initialTab?: string } = {}) {
   const { user } = useAuth()
   const { toast } = useToast()
-  const [tab, setTab] = useState('overview')
+  const [tab, setTab] = useState(initialTab)
+
+  useEffect(() => {
+    if (initialTab) setTab(initialTab)
+  }, [initialTab])
   const [metrics, setMetrics] = useState<Metrics | null>(null)
   const [users, setUsers] = useState<UserRow[]>([])
   const [submissions, setSubmissions] = useState<SubmissionRow[]>([])
@@ -57,12 +61,17 @@ export function AdminView() {
   useEffect(() => {
     if (user?.role !== 'ADMIN' && user?.role !== 'MODERATOR') return
     loadMetrics()
+    loadUsers()
     loadSubmissions()
     loadMissions()
     loadSettings()
     loadLogs()
     loadReports()
   }, [user])
+
+  useEffect(() => {
+    if (tab === 'users') loadUsers()
+  }, [tab])
 
   if (user?.role !== 'ADMIN' && user?.role !== 'MODERATOR') {
     return <Alert variant="destructive"><AlertDescription>Access denied. Admin or Moderator role required.</AlertDescription></Alert>
@@ -259,7 +268,13 @@ export function AdminView() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {users.map(u => (
+                  {users.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-6 text-muted-foreground text-xs">
+                        Loading users from database...
+                      </TableCell>
+                    </TableRow>
+                  ) : users.map(u => (
                     <TableRow key={u.id}>
                       <TableCell className="font-medium">{u.name} {u.isDemo && <Badge variant="secondary" className="text-[10px] ml-1">Demo</Badge>}</TableCell>
                       <TableCell className="text-xs">{u.email}</TableCell>

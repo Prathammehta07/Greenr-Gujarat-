@@ -134,7 +134,7 @@ export async function POST(req: NextRequest) {
   // 6. Sample citizens + footprints + district stats
   const sampleNames = ['Riya Mehta', 'Karan Joshi', 'Sneha Gandhi', 'Vivek Desai', 'Anjali Pandya', 'Rohan Vyas', 'Pooja Bhatt', 'Hardik Amin', 'Nisha Kothari', 'Jay Thakkar']
   const allDistricts = await db.district.findMany()
-  const sampleUsers = []
+  const sampleUsers: any[] = []
   for (let i = 0; i < sampleNames.length; i++) {
     const email = `sample${i + 1}@demo.greengujarat.in`
     let user = await db.user.findUnique({ where: { email } })

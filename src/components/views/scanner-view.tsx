@@ -82,7 +82,7 @@ export function ScannerView() {
     setConfirming(true)
     setError(null)
     try {
-      const r = await api.post('/bills', {
+      const r = await api.post<{ pointsAwarded: number; footprint: { savingsKwh: number } }>('/bills', {
         billId: ocr.billId,
         unitsConsumed: Number(units),
         amount: amount ? Number(amount) : undefined,

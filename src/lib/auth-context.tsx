@@ -13,6 +13,8 @@ interface AuthState {
     isDemo: boolean
     publicName?: string
     consentPublic?: boolean
+    consentProfile?: boolean
+    consentContact?: boolean
     profile?: {
       districtId?: string
       districtName?: string

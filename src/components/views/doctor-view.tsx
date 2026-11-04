@@ -39,7 +39,7 @@ export function DoctorView() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    api.get<DoctorData>('/dashboard').then(d => {
+    api.get<any>('/dashboard').then(d => {
       // transform dashboard into doctor format
       const chart = d.monthlyConsumption.map(m => ({ month: m.month, kwh: m.kwh, baseline: m.baseline }))
       setData({
@@ -121,12 +121,12 @@ export function DoctorView() {
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-              <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-              <YAxis tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-              <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
-              <ReferenceLine y={data.avgKwh} stroke="hsl(var(--muted-foreground))" strokeDasharray="6 4" label={{ value: 'Avg', fontSize: 10, position: 'right' }} />
-              <Bar dataKey="kwh" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} name="Your Usage (kWh)" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.6} vertical={false} />
+              <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#64748b' }} axisLine={{ stroke: '#cbd5e1' }} tickLine={false} />
+              <YAxis tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} unit=" kWh" />
+              <Tooltip contentStyle={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 12, boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+              <ReferenceLine y={data.avgKwh} stroke="#94a3b8" strokeDasharray="6 4" label={{ value: 'Avg', fontSize: 10, position: 'right', fill: '#64748b' }} />
+              <Bar dataKey="kwh" fill="#10b981" radius={[6, 6, 0, 0]} maxBarSize={48} name="Your Usage (kWh)" />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>

@@ -95,7 +95,7 @@ export function analyseEnergy(records: { month: string; kwh: number }[], tariff:
   }
 
   // recommendations
-  const recommendations: EnergyAnalysis['recommendations'][] = []
+  const recommendations: EnergyAnalysis['recommendations'] = []
   if (avg > 0) {
     // AC: assume AC ~ 35% of summer consumption, 1.5 unit/hr
     const acShare = 0.35

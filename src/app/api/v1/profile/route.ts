@@ -52,7 +52,7 @@ export async function PUT(req: NextRequest) {
 
   // validate district if provided
   if (data.districtId) {
-    const d = await db.district.findUnique({ where: { id: data.districtId } })
+    const d = await db.district.findUnique({ where: { id: String(data.districtId) } })
     if (!d) return err('Invalid district')
   }
 
@@ -66,7 +66,8 @@ export async function PUT(req: NextRequest) {
   if (data.consentPublic !== undefined) {
     userFields.consentPublic = data.consentPublic
     if (data.consentPublic && !user.publicName) {
-      userFields.publicName = (data.name || user.name).split(' ')[0] + '_' + Math.random().toString(36).slice(2, 6)
+      const displayName = String(data.name || user.name)
+      userFields.publicName = displayName.split(' ')[0] + '_' + Math.random().toString(36).slice(2, 6)
     }
   }
   if (data.consentProfile !== undefined) userFields.consentProfile = data.consentProfile

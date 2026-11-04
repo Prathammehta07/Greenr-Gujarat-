@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -11,6 +11,8 @@ import { useRouter } from '@/lib/router'
 import { useAuth } from '@/lib/auth-context'
 import { api, ApiError } from '@/lib/api-client'
 import { useToast } from '@/hooks/use-toast'
+import { getDefaultDashboard } from '@/lib/rbac'
+import { GreenGujaratLogo } from '@/components/shared/logo'
 
 interface District { id: string; name: string; code: string }
 
@@ -33,10 +35,12 @@ export function LoginView() {
     setError(null)
     setLoading(true)
     try {
-      await api.post('/auth/login', { email, password })
+      const res = await api.post<{ user: { role: string; name: string } }>('/auth/login', { email, password })
       await refresh()
-      toast({ title: 'Welcome back!', description: 'Logged in successfully.' })
-      router.navigate('dashboard')
+      const role = res.user?.role
+      const targetDashboard = getDefaultDashboard(role)
+      toast({ title: 'Welcome back!', description: `Logged in as ${res.user?.name || 'User'}.` })
+      router.navigate(targetDashboard)
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Login failed')
     } finally {
@@ -96,9 +100,9 @@ export function RegisterView() {
   const [error, setError] = useState<string | null>(null)
 
   // load districts on mount
-  useState(() => {
+  useEffect(() => {
     api.get<{ districts: District[] }>('/districts').then(d => setDistricts(d.districts)).catch(() => {})
-  })
+  }, [])
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -236,14 +240,8 @@ function AuthShell({ title, subtitle, children }: { title: string; subtitle: str
           <button onClick={() => router.navigate('landing')} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6">
             <ArrowLeft className="h-4 w-4" /> Back to home
           </button>
-          <div className="flex items-center gap-2 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-              <Leaf className="h-6 w-6 text-primary-foreground" />
-            </div>
-            <div>
-              <div className="font-bold text-lg">GREEN GUJARAT</div>
-              <div className="text-xs text-muted-foreground">Mission LiFE Citizen Engagement</div>
-            </div>
+          <div className="mb-6 cursor-pointer" onClick={() => router.navigate('landing')}>
+            <GreenGujaratLogo size="lg" roleTitle="Mission LiFE" roleSubtitle="Citizen Engagement" />
           </div>
           <Card>
             <CardHeader>
