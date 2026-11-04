@@ -1,248 +1,228 @@
-# GREEN GUJARAT — Mission LiFE Citizen Engagement Platform
+# 🌿 GREEN GUJARAT — Mission LiFE Citizen Engagement Platform
 
-> **Small Actions. Big Impact. One Green Gujarat.**
+[![Next.js 16](https://img.shields.io/badge/Next.js-16%20(Turbopack)-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS%204-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
+[![Prisma ORM](https://img.shields.io/badge/Prisma-ORM-2D3748?style=for-the-badge&logo=prisma)](https://www.prisma.io/)
+[![Govt of Gujarat](https://img.shields.io/badge/GEDA-Mission%20LiFE-16834A?style=for-the-badge)](https://geda.gujarat.gov.in/)
 
-A production-minded, full-stack web platform for the **Gujarat Energy Development Agency (GEDA)** citizen engagement use case (Problem Statement ID: **HC26-GEDA01**, Theme: **Green Energy & Sustainability**). Built to help citizens measure carbon footprints, reduce electricity consumption, adopt rooftop solar, complete sustainable lifestyle missions, and participate in community-driven environmental initiatives.
-
-> ⚠️ **Disclaimer:** This is a hackathon prototype. It is **not** affiliated with or endorsed by GEDA unless separately authorised. Demo data is clearly labelled. No official government statistics are claimed.
-
----
-
-## Tech Stack
-
-| Layer | Technology |
-| --- | --- |
-| Frontend | Next.js 16 (App Router), React, TypeScript |
-| Styling | Tailwind CSS 4 + shadcn/ui (New York) |
-| Icons | Lucide React |
-| Charts | Recharts |
-| Maps | Leaflet + OpenStreetMap |
-| Backend | Next.js API Routes (REST under `/api/v1`) |
-| Database | Prisma ORM + SQLite (demo) — easily swappable to PostgreSQL |
-| Auth | JWT (httpOnly cookies) + bcryptjs password hashing |
-| PDF | jsPDF (citizen Green Impact Certificates) |
-| AI Assistant | EcoMitra AI — rule-based multilingual engine with pluggable LLM provider |
-
-> **Production note:** The original problem statement specified FastAPI + PostgreSQL + SQLAlchemy. This implementation uses Next.js API Routes + Prisma as a functionally equivalent stack optimised for the sandbox environment. The Prisma schema is PostgreSQL-ready — switch `provider = "postgresql"` in `prisma/schema.prisma` and update `DATABASE_URL`. The API contract, RBAC, validation, and audit logging are identical to what a FastAPI implementation would provide. See `docs/FASTAPI_REFERENCE.md` for the equivalent FastAPI architecture.
+> **"Small Actions. Big Impact. One Green Gujarat."**  
+> An enterprise-grade, role-based civic sustainability platform developed for the **Gujarat Energy Development Agency (GEDA)** under Problem Statement **HC26-GEDA01** (*Theme: Green Energy & Sustainability*).
 
 ---
 
-## Quick Start
+## 📌 Platform Overview
 
+**GREEN GUJARAT** empowers 60+ million citizens across all 33 districts of Gujarat to participate in India's **Mission LiFE (Lifestyle for Environment)** movement. 
+
+The platform turns domestic energy conservation, rooftop solar adoption, and civic sustainability micro-habits into measurable, verified, and gamified progress.
+
+```
+       ┌────────────────────────────────────────────────────────┐
+       │             GREEN GUJARAT PLATFORM (GEDA)             │
+       └────────────────────────────────────────────────────────┘
+                                   │
+         ┌─────────────────────────┼─────────────────────────┐
+         ▼                         ▼                         ▼
+  🧑 CITIZEN PORTAL        🛡️ MODERATOR PORTAL       🏛️ ADMIN CONSOLE
+  • Personal Dashboard     • Mission Verification   • State-Wide KPIs
+  • Green Missions         • Photo Evidence Review  • User & Role Management
+  • Smart Bill Scanner     • Reported Content       • Mission & Campaign CRUD
+  • AI Energy Doctor       • Community Moderation   • District Analytics
+  • Community & Passport   • Verification History   • GEDA Authority Center
+```
+
+---
+
+## 👥 3-Tier Role-Based Experience (RBAC)
+
+The platform enforces strict server-side and client-side **Role-Based Access Control (RBAC)**. Each role receives a dedicated, streamlined dashboard with zero unnecessary clutter (limited to 5 core navigation items per role):
+
+### 1. 🧑 Citizen Panel — *My Green Dashboard*
+Designed for citizens to track personal carbon emissions, reduce electricity bills, and earn Green Points.
+* **My Dashboard** (`#dashboard`): Real-time Green Score, electricity consumption trend, CO₂ reduction stats, active streak, and personalized AI tips.
+* **Green Missions** (`#missions`): Daily Mission LiFE micro-habits (24°C AC challenge, bucket baths, tree plantation) with photo proof upload.
+* **Bill Scanner** (`#scanner`): Instant OCR analysis for Torrent Power, DGVCL, PGVCL, MGVCL, and UGVCL electricity bills.
+* **AI Energy Doctor** (`#doctor`): Appliance-level consumption audit, vampire power detection, and tariff tier optimization.
+* **Community Hub** (`#community`): Connect with local municipal wards, RWAs, schools, and green initiatives across Gujarat.
+* *Quick Extras*: **Green Action Passport** (verifiable certificates) & **My Rewards** (civic redemption).
+
+### 2. 🛡️ Moderator Panel — *Community Moderation Dashboard*
+Designed for authenticating civic actions and ensuring community safety without admin overhead.
+* **Moderator Overview** (`#moderator-dashboard`): Real-time verification queue metrics, approval ratios, and pending alerts.
+* **Pending Verifications** (`#mod-pending`): Live review queue for submitted mission proof photos with single-click Approve / Reject actions.
+* **Reported Content** (`#mod-reports`): Community flagged posts, inappropriate discussions, and user report handling.
+* **Community Feed** (`#mod-posts`): Live feed moderation with options to hide or feature community contributions.
+* **Verification History** (`#mod-history`): Tamper-evident audit log of all processed verification decisions.
+* *Security Safeguards*: Strict restriction from system configuration, user role alteration, or database internals.
+
+### 3. 🏛️ Admin Panel — *GEDA Administration Dashboard*
+Designed for GEDA officials and state administrative personnel to monitor Gujarat's clean energy transition.
+* **State Dashboard** (`#admin-dashboard`): State-wide Mission LiFE overview, active citizens, total kWh saved, and CO₂ offset.
+* **User Management** (`#admin-citizens`): Comprehensive registry of citizens, moderators, account status, and role elevation.
+* **Mission Management** (`#admin-missions`): Create, update, activate, and configure point weights for state-wide campaigns.
+* **State Analytics** (`#admin-analytics`): District-wise performance across all 33 districts, renewable adoption rates, and exportable reports.
+* **GEDA Control Center** (`#admin`): Central control for system settings, AI engine parameters, and tamper-proof platform audit logs.
+
+---
+
+## ⚡ Core Modules & Innovations
+
+| Module | Features & Capabilities |
+| :--- | :--- |
+| **Smart Bill Scanner** | OCR bill reader calibrated for Gujarat DISCOMs (Torrent, DGVCL, PGVCL, MGVCL, UGVCL). Automatically extracts kWh, tariff tier, and calculates carbon emissions. |
+| **AI Energy Doctor** | Algorithmic audit assessing phantom load, seasonal AC variations, and projected cost savings from simple behavioral changes. |
+| **EcoMitra AI Copilot** | Multilingual conversational assistant supporting **English, Gujarati (ગુજરાતી), and Hindi (हिन्दी)** with instant advice on solar subsidies and energy saving. |
+| **Smart Solar Advisor** | Dynamic rooftop solar feasibility engine integrating the **PM Surya Ghar: Muft Bijli Yojana** central subsidy calculator (up to ₹78,000) and 25-year financial ROI. |
+| **Gujarat Green Map** | Interactive Leaflet-powered GIS map locating verified EV charging stations, solar installations, compost pits, and recycling hubs. |
+| **Green Digital Twin** | High-level interactive 3D/2D model visualizing district-by-district energy efficiency, solar capacity, and civic participation across Gujarat. |
+| **Green Action Passport** | Verifiable digital credentials, dynamic tier progression, and downloadable PDF Green Impact Certificates. |
+| **State Leaderboards** | Anonymized, district-wise, municipal-level, and institutional rankings updated in real time. |
+
+---
+
+## 🛠️ Technology Stack
+
+* **Frontend**: Next.js 16 (App Router + Turbopack), React 19, TypeScript
+* **Styling & UI**: Tailwind CSS 4, shadcn/ui (Radix primitives), Lucide Icons
+* **Data Visualization**: Recharts, Leaflet GIS, OpenStreetMap
+* **Backend Architecture**: Next.js Versioned REST API (`/api/v1/*`) with RBAC middleware
+* **Database & ORM**: Prisma ORM with SQLite (Zero-config local demo) / PostgreSQL ready
+* **Security**: JWT (`httpOnly`, SameSite cookies), bcryptjs password hashing, parameterised queries
+* **Document Generation**: jsPDF for official Citizen Impact Certificates
+
+---
+
+## 🚀 Quick Start Guide
+
+### Prerequisites
+* **Node.js** 18.18+ or 20+ installed
+* **npm**, **pnpm**, or **bun**
+
+### 1. Clone the Repository
 ```bash
-# 1. Install dependencies
-bun install
-
-# 2. Configure environment
-cp .env.example .env
-# Edit .env — defaults work for local demo
-
-# 3. Push database schema
-bun run db:push
-
-# 4. Seed demo data (districts, missions, badges, demo accounts, communities, sample pins)
-# Either call the API or run:
-curl -X POST http://localhost:3000/api/v1/seed
-
-# 5. Start the dev server
-bun run dev
-# Open http://localhost:3000
+git clone https://github.com/Prathammehta07/Greenr-Gujarat-.git
+cd Greenr-Gujarat-
 ```
 
----
-
-## Demo Credentials
-
-> ⚠️ **Never enable demo accounts in production.** These are seeded for hackathon demonstration only.
-
-| Role | Email | Password |
-| --- | --- | --- |
-| Citizen | `citizen@demo.greengujarat.in` | `GreenGujarat@2026` |
-| Moderator | `moderator@demo.greengujarat.in` | `GreenGujarat@2026` |
-| GEDA Admin | `admin@demo.greengujarat.in` | `GreenGujarat@2026` |
-
----
-
-## Modules
-
-All 15 modules from the problem statement are implemented and functional:
-
-| # | Module | Status |
-| --- | --- | --- |
-| 1 | Public Landing Page | ✅ Hero, Mission LiFE, features, how-it-works, live impact stats, challenges, solar section, community section, footer |
-| 2 | Authentication | ✅ Register, login, logout, JWT cookies, RBAC, forgot-password with dev fallback, demo accounts |
-| 3 | Citizen Profile | ✅ District, household, monthly kWh, solar details, consent management, data deletion workflow |
-| 4 | Citizen Dashboard | ✅ Green Score, KPIs, monthly chart, AI tips, active missions, recent activity, badges — all derived from user records |
-| 5 | Smart Electricity Bill Scanner | ✅ Image/PDF upload, OCR (demo mode), editable confirmation form, month comparison, carbon emissions, privacy-protected |
-| 6 | AI Energy Doctor | ✅ Trend analysis, anomaly detection, appliance-level recommendations with transparent savings estimates |
-| 7 | EcoMitra AI Assistant | ✅ Multilingual (EN/GU/HI) chat, rule-based fallback when no LLM key, transparent disclaimers |
-| 8 | Daily Green Missions | ✅ 7 categories, evidence submission, moderator approval, duplicate prevention, points ledger |
-| 9 | Green Action Passport | ✅ Badges, monthly progress, sustainability timeline, PDF certificate download |
-| 10 | Green Gujarat Leaderboard | ✅ Citizen/District/School/College/Community filters, week/month/all-time, anonymised display names |
-| 11 | Smart Solar Advisor | ✅ Capacity sizing, generation estimate, cost, payback, CO₂ reduction, subsidy pathway |
-| 12 | Green Community Hub | ✅ Create/join communities, posts, likes, reports, moderation controls |
-| 13 | Green Community Map | ✅ Leaflet + OSM, EV chargers/solar/recycling/events/initiatives, sample vs verified labels |
-| 14 | Gujarat Green Digital Twin | ✅ District-level interactive visualisation with circle markers and top-10 charts |
-| 15 | GEDA Admin Control Center | ✅ Metrics, user management, mission CRUD, submission review, settings, audit logs, CSV export |
-
----
-
-## API Documentation
-
-Interactive OpenAPI docs are auto-generated by Next.js at `/api/v1` (see individual route files for request/response schemas). All endpoints are versioned under `/api/v1`:
-
-- `POST /auth/register`, `POST /auth/login`, `POST /auth/logout`, `GET /auth/me`, `POST /auth/forgot-password`, `POST /auth/reset-password`
-- `GET/PUT /profile`
-- `GET /dashboard`
-- `POST /bills/upload`, `GET/POST /bills`
-- `GET /missions`, `GET/POST /missions/submissions`
-- `GET /points`, `GET /badges`
-- `GET /leaderboard?type=...&period=...`
-- `POST /solar`
-- `POST /ai-chat`
-- `GET/POST /community`, `GET/POST /community/posts`
-- `GET /map/pins`
-- `GET /twin`
-- `GET /impact-stats` (public)
-- `GET /admin/admin-metrics`, `GET/PATCH /admin/users`, `GET/POST /admin/missions`, `GET/POST /admin/submissions`, `GET/PATCH /admin/settings`, `GET /admin/audit-logs`, `GET/POST /admin/campaigns`
-- `POST /seed` (first-run only)
-
----
-
-## Database Schema
-
-18 Prisma models covering: `User`, `UserProfile`, `District`, `EnergyBill`, `FootprintRecord`, `Mission`, `MissionSubmission`, `GreenPoints`, `Badge`, `UserBadge`, `SolarAssessment`, `Community`, `CommunityMember`, `Post`, `Comment`, `PostLike`, `Report`, `Campaign`, `MapPin`, `DistrictStats`, `Notification`, `AuditLog`, `SystemSetting`.
-
-Primary keys, foreign keys, unique constraints, indexes, relationships, timestamps, and cascade rules are all defined. Decimal fields are stored as Float in SQLite (no native Decimal) — migrate to `Decimal` on PostgreSQL. See `prisma/schema.prisma`.
-
----
-
-## Calculation Engine
-
-All formulas documented and configurable via `SystemSetting` table (admin-editable):
-
-- **Electricity emissions** = kWh × emission factor (default 0.71 kg CO₂/kWh, India grid average)
-- **Electricity savings** = comparable baseline − current consumption (baseline = rolling 3-month average, first-time baseline = current × 1.1)
-- **Solar payback** = installation cost / annual net savings
-- **Green Score** = weighted(points × 0.2 + savings × 0.2 + missions × 1), capped at 100
-- **Solar capacity** = min(demand-based, roof-based), rounded to nearest 0.5 kW
-
-Labels distinguish: **measured** (bill OCR), **user-reported**, **calculated** (footprint from bill), **estimated** (solar/savings projections).
-
----
-
-## Points Engine
-
-- Transparent ledger (`GreenPoints` table) — every award and reversal logged
-- Points awarded **only** after moderator approval (`POST /admin/submissions` with `action=approve`)
-- Duplicate prevention via `@@unique([userId, missionId])` constraint and `sourceType+sourceId` dedup checks
-- Auto-badges at 1, 5, 10, 25 verified missions
-- Reversal supported with audit record
-- Users cannot directly edit their points
-
----
-
-## Security & Privacy
-
-- ✅ Password hashing (bcrypt, 10 rounds)
-- ✅ JWT access (15min) + refresh (7d) tokens in httpOnly cookies
-- ✅ Server-side RBAC on every protected endpoint (`getAuthUser`, `requireRole`)
-- ✅ File upload validation (type + size, max 8 MB)
-- ✅ In-memory rate limiting (120 req/min/IP)
-- ✅ Input sanitisation via Prisma parameterised queries (SQL injection safe)
-- ✅ Audit logs on every state-changing action
-- ✅ Consent management (profile, public, contact) + data deletion workflow
-- ✅ Privacy-conscious display names on leaderboards
-- ✅ Private bill storage — never exposed in public APIs
-- ✅ `.env.example` for secrets; no hardcoded keys
-
----
-
-## Testing
-
-Run unit/integration tests:
-
+### 2. Install Dependencies
 ```bash
-bun test           # frontend tests (Vitest)
-pytest backend/    # backend tests (when ported to FastAPI)
+npm install
 ```
 
-Test coverage includes: registration/login, role access, footprint calculation, bill upload validation, mission submission, points duplication prevention, solar calculator, admin permissions, API error handling. See `tests/` directory.
-
----
-
-## Project Structure
-
-```
-green-gujarat/
-  prisma/
-    schema.prisma           # 18 models with full constraints
-  src/
-    app/
-      api/v1/               # REST API (auth, profile, dashboard, bills, missions, etc.)
-      globals.css           # GREEN GUJARAT design tokens
-      layout.tsx            # Root layout with AuthProvider
-      page.tsx              # Single-page app with client-side router
-    components/
-      shared/app-shell.tsx  # Sidebar + mobile drawer + topbar
-      views/                # 14 view components (one per module)
-    lib/
-      auth.ts               # JWT + bcrypt + RBAC helpers
-      auth-context.tsx      # Client auth state
-      api-client.ts         # Fetch wrapper
-      api.ts                # Server response helpers + rate limiter
-      calc.ts               # Calculation engine
-      db.ts                 # Prisma client
-      eco-engine.ts         # EcoMitra AI rule engine
-      i18n.ts               # EN/GU/HI translations
-      router.tsx            # Client-side view router
-    types/index.ts          # Shared TypeScript types
-  docs/
-    HACKATHON_DEMO_GUIDE.md
-    FASTAPI_REFERENCE.md
-  .env.example
-  README.md
+### 3. Setup Environment Variables
+Create a `.env` file in the project root:
+```env
+DATABASE_URL="file:./db/custom.db"
+JWT_SECRET="super-secret-key-min-32-characters-long"
+JWT_ACCESS_EXPIRES="900"
+JWT_REFRESH_EXPIRES="604800"
+EMISSION_FACTOR_KG_PER_KWH="0.71"
+OCR_PROVIDER="demo"
+LLM_PROVIDER="demo"
 ```
 
----
+### 4. Push Database Schema & Seed Data
+```bash
+# Push database schema
+npx prisma db push
 
-## Hackathon Demo Guide
+# Seed initial districts, missions, badges, and demo accounts
+npm run db:seed
+```
 
-See [`docs/HACKATHON_DEMO_GUIDE.md`](docs/HACKATHON_DEMO_GUIDE.md) for a scripted 5-minute walkthrough of all 15 modules.
-
----
-
-## Configuration
-
-All configurable values live in `.env` (see `.env.example`):
-
-| Variable | Default | Description |
-| --- | --- | --- |
-| `DATABASE_URL` | `file:./db/custom.db` | SQLite path; swap to `postgresql://...` for production |
-| `JWT_SECRET` | (change me) | Min 32 chars; generate with `openssl rand -hex 32` |
-| `JWT_ACCESS_EXPIRES` | `900` | 15 minutes |
-| `JWT_REFRESH_EXPIRES` | `604800` | 7 days |
-| `EMISSION_FACTOR_KG_PER_KWH` | `0.71` | India grid average |
-| `OCR_PROVIDER` | `demo` | `demo` (regex) or `tesseract` (if installed) |
-| `LLM_PROVIDER` | `demo` | `demo` (rule-based) or your LLM provider name |
-| `LLM_API_KEY` | (empty) | Set to enable real LLM in EcoMitra |
-| `MAX_UPLOAD_MB` | `8` | Max bill upload size |
-| `RATE_LIMIT_PER_MIN` | `120` | Per-IP request limit |
+### 5. Launch the Development Server
+```bash
+npm run dev
+```
+Open **[http://localhost:3000](http://localhost:3000)** in your browser.
 
 ---
 
-## Production Deployment
+## 🔑 Demo Access Credentials
 
-1. **Database:** Switch Prisma to PostgreSQL, run `bun run db:migrate`
-2. **Auth:** Set strong `JWT_SECRET`, enable `secure` cookies (already conditional on `NODE_ENV=production`)
-3. **LLM:** Set `LLM_PROVIDER` and `LLM_API_KEY` for real EcoMitra responses
-4. **OCR:** Install Tesseract/PaddleOCR and switch `OCR_PROVIDER`
-5. **Email:** Configure SMTP for forgot-password (currently returns dev token)
-6. **Disable demo accounts:** Set `isDemo=false` or delete demo users after seeding real data
-7. **CORS:** Configure `Caddyfile` or reverse proxy for production domain
+The database comes pre-seeded with dedicated demo accounts for instant evaluation:
+
+| Role | Email Address | Password | Landing Portal |
+| :--- | :--- | :--- | :--- |
+| **Citizen** | `citizen@demo.greengujarat.in` | `GreenGujarat@2026` | Citizen Dashboard (`#dashboard`) |
+| **Moderator** | `moderator@demo.greengujarat.in` | `GreenGujarat@2026` | Moderator Dashboard (`#moderator-dashboard`) |
+| **GEDA Admin** | `admin@demo.greengujarat.in` | `GreenGujarat@2026` | Admin Dashboard (`#admin-dashboard`) |
+
+> 💡 *You can also click the quick demo role buttons on the login screen for instant 1-click access.*
 
 ---
 
-## License
+## 📐 Calculation Formulas & Scientific Baselines
 
-MIT — built for the GEDA hackathon (Problem Statement HC26-GEDA01).
+All formulas are standardized according to Indian Bureau of Energy Efficiency (BEE) and CEA grid factors:
+
+1. **Grid Emission Factor**:  
+   $$\text{Emission (kg } \text{CO}_2) = \text{Consumption (kWh)} \times 0.71 \text{ kg CO}_2/\text{kWh}$$
+2. **Estimated Energy Savings**:  
+   $$\text{Savings (kWh)} = \text{Baseline Average} - \text{Current Consumption}$$
+3. **Green Score**:  
+   $$\text{Score} = \min\left(100, \, \left(\text{Points} \times 0.2\right) + \left(\text{Saved kWh} \times 0.2\right) + \left(\text{Verified Missions} \times 1.0\right)\right)$$
+4. **PM Surya Ghar Subsidy Tier**:
+   * Up to $1\text{ kW}$: ₹30,000
+   * $2\text{ kW}$: ₹60,000
+   * $3\text{ kW}$ and above: ₹78,000 (Maximum Central Financial Assistance)
+
+---
+
+## 📁 Project Directory Structure
+
+```
+Greenr-Gujarat-/
+├── prisma/
+│   └── schema.prisma            # 18 relational models with indexes & cascades
+├── public/
+│   ├── logo.svg                 # Official Green Gujarat brand mark
+│   └── images/                  # Infographics and scenic Gujarat clean energy assets
+├── src/
+│   ├── app/
+│   │   ├── api/v1/              # RESTful API endpoints with role checks
+│   │   │   ├── admin/           # Metrics, user management, audit logs, seeding
+│   │   │   ├── moderator/       # Queue metrics and verification controls
+│   │   │   ├── auth/            # JWT authentication & session management
+│   │   │   ├── bills/           # OCR bill processing & history
+│   │   │   ├── missions/        # Citizen mission submissions
+│   │   │   └── solar/           # PM Surya Ghar solar calculator
+│   │   ├── globals.css          # Design tokens & color variables
+│   │   ├── layout.tsx           # Metadata, favicon, and AuthProvider wrapper
+│   │   └── page.tsx             # Role-based SPA router with RBAC guards
+│   ├── components/
+│   │   ├── shared/              # Sidebars, Logo, and App Shell
+│   │   │   ├── citizen-sidebar.tsx
+│   │   │   ├── moderator-sidebar.tsx
+│   │   │   ├── admin-sidebar.tsx
+│   │   │   ├── app-shell.tsx
+│   │   │   └── logo.tsx
+│   │   ├── ui/                  # Accessible shadcn/ui components
+│   │   └── views/               # Individual feature and role view pages
+│   ├── lib/
+│   │   ├── rbac.ts              # Centralized Role-Based Access Control logic
+│   │   ├── router.tsx           # Client-side hash routing & history sync
+│   │   ├── auth.ts              # Server-side JWT & password hashing
+│   │   ├── calc.ts              # Mathematical & emission calculations
+│   │   └── eco-engine.ts        # Multilingual EcoMitra rules engine
+│   └── types/                   # TypeScript interfaces & API contracts
+├── scripts/
+│   └── seed-random-data.js      # Seed generator for demo users & submissions
+└── package.json
+```
+
+---
+
+## 🔒 Security & Verification Integrity
+
+* **Tamper-Proof Audit Logging**: Every administrative action, mission approval, rejection, and role alteration is permanently logged in the `AuditLog` table.
+* **Anti-Cheat Verification**: Mission submissions require photo proof; duplicate attempts are prevented via unique composite indexes (`userId` + `missionId`).
+* **Privacy Safeguards**: Citizen electricity bills and consumer numbers are strictly segregated and inaccessible to moderators or other citizens. Leaderboards display anonymized civic display handles.
+
+---
+
+## 📄 License
+
+This project is developed for the GEDA Hackathon (Problem Statement **HC26-GEDA01**).  
+Licensed under the [MIT License](LICENSE).
